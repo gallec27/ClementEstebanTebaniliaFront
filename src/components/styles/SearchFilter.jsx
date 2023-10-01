@@ -6,6 +6,7 @@ const FilterContainer = styled.div`
   flex-direction: column;
   margin-bottom: 20px;
   min-width: 360px;
+  align-items: center;
 
   @media (min-width: 768px) {
     flex-direction: row;
