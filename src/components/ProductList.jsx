@@ -89,7 +89,7 @@ const ProductList = () => {
     // Filtrar por descripción
     if (search) {
       filtered = filtered.filter((product) =>
-        product.nombre_cat.toLowerCase().includes(search.toLowerCase())
+        product.nombre.toLowerCase().includes(search.toLowerCase())
       );
     }
 
@@ -154,7 +154,7 @@ const ProductList = () => {
           filteredProducts.map((product) => (
             <Card key={product.id}>              
               <h2>{product.nombre}</h2>
-              <ProductImage src={product.imagen} alt={product.nombre} />
+              <ProductImage src={`/api/public/uploads/products/${product.imagen}`} alt={product.nombre} />
               <p>{product.detalle}</p>
               <p>Precio: ${product.precio}</p>
               <Button onClick={() => handleAddToCart(product)}>Aceptar</Button>
