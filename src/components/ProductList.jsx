@@ -1,20 +1,32 @@
 import React, { useState, useEffect } from "react";
+import { useUserContext } from "./UserContext";
+import {
+  FilterContainer,
+  SearchInput,
+  Select,
+  CheckboxLabel,
+  CheckboxInput,
+  ResetButton
+} from "./styles/SearchFilter";
+
 import {
   Card,
   ProductImage,
   CardContainer,
   Button,
-  Title,
-  SearchInput,
-} from "./Card";
+  Title  
+} from "./styles/Card";
+
+import { NavBar, Logo, UserInfo } from "./styles/Layout";
 
 const ProductList = () => {
+  const { user } = useUserContext();
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [cartItems, setCartItems] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [minPrice, setMinPrice] = useState("");
-  const [category, setCategory] = useState("");
+  const [category, setCategory] = useState(0); // Inicializar con el valor 0
   const [sortByPrice, setSortByPrice] = useState(false);
   const [resetFilters, setResetFilters] = useState(false); // Nuevo estado
   const [categories, setCategories] = useState([]); // Estado para almacenar categorías
@@ -37,7 +49,7 @@ const ProductList = () => {
   const handleResetFilters = () => {
     setSearchTerm("");
     setMinPrice("");
-    setCategory("");
+    setCategory(0); // Restablecer a 0 para "Todas las categorías"
     setSortByPrice(false);
     // Restablecer los productos filtrados a la lista completa de productos
     setFilteredProducts(products);
@@ -61,11 +73,12 @@ const ProductList = () => {
     const categoryName = event.target.value;
     const categoryObject = categories.find((cat) => cat.nombre_cat.toLowerCase() === categoryName.toLowerCase());
     if (categoryObject) {
-      setCategory(categoryObject.id);
+      setCategory(categoryObject.nombre);
       filterProducts(searchTerm, minPrice, categoryObject.id, sortByPrice);
-    } else {
-      // Manejar el caso donde no se encuentra la categoría
-      setCategory(""); // O establecer un valor predeterminado
+    } else {      
+      setCategory("Todas las categorías");
+      const idCat = 0;
+      filterProducts(searchTerm, minPrice, idCat, sortByPrice); 
     }
   };
 
@@ -75,13 +88,13 @@ const ProductList = () => {
   };
 
   const filterProducts = (search, min, cat, sortBy) => {
-    let filtered = [...products];    
+    let filtered = [...products];
 
     // Verificar si se deben restablecer los filtros
     if (resetFilters) {
       setSearchTerm("");
       setMinPrice("");
-      setCategory("");
+      setCategory(0);
       setSortByPrice(false);
       setResetFilters(false); // Restablecer la marca
     }
@@ -101,7 +114,7 @@ const ProductList = () => {
     }
 
     // Filtrar por categoría   
-    if (cat) {
+    if (cat > 0) {
       filtered = filtered.filter(
         (product) => product.id_cat === cat
       );
@@ -117,8 +130,17 @@ const ProductList = () => {
 
   return (
     <div>
+      <NavBar>
+        <Logo src="/image/logo1.png" alt="logo_tebanilia" />
+        <UserInfo>
+          {user ? (
+            // Muestra el nombre de usuario si está logueado
+            <span>Hola, {user.nombre}</span>
+          ) : null}
+        </UserInfo>
+      </NavBar>
       <Title>Lista de Productos</Title>
-      <div>
+      <FilterContainer>
         <SearchInput
           type="text" // Cambiado a "text"
           placeholder="Buscar por descripción"
@@ -131,41 +153,42 @@ const ProductList = () => {
           value={minPrice}
           onChange={handleMinPriceChange}
         />
-        <select value={category} onChange={handleCategoryChange}>
+        <Select value={category} onChange={handleCategoryChange}>
           <option value="">Todas las categorías</option>
           {categories.map((cat) => (
             <option key={cat.id} value={cat.nombre_cat}>
               {cat.nombre_cat}
             </option>
           ))}
-        </select>
-        <label>
+        </Select>
+        <CheckboxLabel>
           Ordenar por precio:
-          <input
+          < CheckboxInput
             type="checkbox"
             checked={sortByPrice}
             onChange={handleSortByPriceChange}
           />
-        </label>
-        <button onClick={handleResetFilters}>Restablecer Filtros</button>
-      </div>
-      <CardContainer>       
+        </CheckboxLabel>
+        <ResetButton onClick={handleResetFilters}>Restablecer Filtros</ResetButton>
+      </FilterContainer>
+      <CardContainer>
         {filteredProducts.length > 0 ? (
           filteredProducts.map((product) => (
-            <Card key={product.id}>              
+            <Card key={product.id}>
               <h2>{product.nombre}</h2>
-              <ProductImage src={`/api/public/uploads/products/${product.imagen}`} alt={product.nombre} />
+              <ProductImage
+                src={`/api/public/uploads/products/${product.imagen}`}
+                alt={product.nombre}
+              />
               <p>{product.detalle}</p>
               <p>Precio: ${product.precio}</p>
               <Button onClick={() => handleAddToCart(product)}>Aceptar</Button>
             </Card>
           ))
+        ) : products.length > 0 ? (
+          <p>Productos no disponibles</p>
         ) : (
-          products.length > 0 ? (
-            <p>Productos no disponibles</p>
-          ) : (
-            <p>Cargando...</p>
-          )
+          <p>Cargando...</p>
         )}
       </CardContainer>
     </div>
