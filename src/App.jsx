@@ -15,7 +15,7 @@ function App() {
         <ResetStyles />
         <Router>
           <Routes>
-            {/* <Route path="/" element={<LoginForm />} /> */}
+            <Route path="/" element={<LoginForm />} /> 
             <Route path="/" element={<ProductList />} />
             {/* <Route path="/productos" element={<ProductList />} /> */}
           </Routes>

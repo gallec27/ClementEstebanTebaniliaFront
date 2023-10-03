@@ -1,8 +1,8 @@
-import styled from 'styled-components';
+import styled from "styled-components";
 
 // Define las fuentes
 const GlobalStyle = styled.div`
-  font-family: 'Aleo', sans-serif;
+  font-family: "Aleo", sans-serif;
   --header-footer-color: #bc4b51;
   --main-background-color: #5b8e7d;
   --banner-background-color: #8cb369;
@@ -16,9 +16,10 @@ const GlobalStyle = styled.div`
 `;
 
 // Define el estilo del body
-const Body = styled.body`
+const Body = styled.div`
   min-width: 290px;
   min-height: 100vh;
+  background-color: #5b8e7d;
 `;
 
 // Define el estilo del enlace visitado
@@ -52,7 +53,7 @@ const HeaderLogo = styled.div`
 
 // Define el estilo del título en el header
 const HeaderTitle = styled.h1`
-  font-family: 'selima';
+  font-family: "selima";
   font-size: 2.5rem;
   color: var(--tebanilia-text-color);
   padding: 0;
@@ -61,11 +62,13 @@ const HeaderTitle = styled.h1`
 // Define el estilo de la barra de navegación
 const NavBar = styled.nav`
   display: flex;
-  flex-direction: column;
-  justify-content: center;
+  flex-direction: row;
+  justify-content: space-between;
   align-items: center;
   padding-left: 10px;
   padding-right: 10px;
+  flex-wrap: wrap;
+  background-color: #bc4b51; 
 `;
 
 // Define el estilo de los enlaces en la barra de navegación
@@ -126,7 +129,7 @@ const FooterLogo = styled.div`
 
 // Define el estilo del título en el footer
 const FooterTitle = styled.h2`
-  font-family: 'selima';
+  font-family: "selima";
   font-size: 1.5rem;
   color: var(--tebanilia-text-color);
   padding: 0;
@@ -191,7 +194,7 @@ const NavBar2 = styled.nav`
 
 // Styled-component para Logo
 const Logo = styled.img`
-  max-width: 100px; // Ajusta el tamaño del logo según tu diseño
+  max-width: 200px; // Ajusta el tamaño del logo según tu diseño
   height: auto;
 `;
 
@@ -228,5 +231,5 @@ export {
   DesktopStyles,
   NavBar2,
   Logo,
-  UserInfo
+  UserInfo,
 };

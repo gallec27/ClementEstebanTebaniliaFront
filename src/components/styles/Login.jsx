@@ -1,11 +1,10 @@
-import styled from 'styled-components';
+import styled from "styled-components";
 
 // Estilo para el contenedor principal
 const Container = styled.div`
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  min-height: 100vh;
 `;
 
 // Estilo para el formulario de registro
@@ -13,7 +12,7 @@ const RegistrationForm = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  background-color: var(--login-background-color);
+  background-color: #ffb9b991;
   padding: 10px;
   max-width: 500px;
   width: 100%;
@@ -27,10 +26,11 @@ const RegistrationForm = styled.div`
 
 // Estilo para el grupo de formularios
 const FormGroup = styled.div`
+  padding: 0.5rem;
   display: flex;
   flex-direction: column;
   align-content: space-between;
-  margin: 10px;
+  margin: 5px;
   min-width: 200px;
 `;
 

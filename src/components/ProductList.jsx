@@ -17,7 +17,7 @@ import {
   Title  
 } from "./styles/Card";
 
-import { NavBar, Logo, UserInfo } from "./styles/Layout";
+import { NavBar, Logo, UserInfo, Body } from "./styles/Layout";
 
 const ProductList = () => {
   const { user } = useUserContext();
@@ -44,6 +44,14 @@ const ProductList = () => {
 
   const handleAddToCart = (product) => {
     // Implementa la lógica para agregar productos al carrito aquí
+  };
+
+  const handleDetails = (product) => {
+    // Lógica para mostrar detalles del producto
+  };
+
+  const handleEdit = (product) => {
+    // Lógica para editar el producto
   };
 
   const handleResetFilters = () => {
@@ -129,12 +137,11 @@ const ProductList = () => {
   };
 
   return (
-    <div>
+    <Body>
       <NavBar>
         <Logo src="/image/logo1.png" alt="logo_tebanilia" />
         <UserInfo>
           {user ? (
-            // Muestra el nombre de usuario si está logueado
             <span>Hola, {user.nombre}</span>
           ) : null}
         </UserInfo>
@@ -182,7 +189,11 @@ const ProductList = () => {
               />
               <p>{product.detalle}</p>
               <p>Precio: ${product.precio}</p>
-              <Button onClick={() => handleAddToCart(product)}>Aceptar</Button>
+              {user.nombre !== "Administrador" ? (
+                <Button onClick={() => handleDetails(product)}>Detalle</Button>
+              ) : (
+                <Button onClick={() => handleEdit(product)}>Modificar</Button>
+              )}
             </Card>
           ))
         ) : products.length > 0 ? (
@@ -191,7 +202,7 @@ const ProductList = () => {
           <p>Cargando...</p>
         )}
       </CardContainer>
-    </div>
+    </Body>
   );
 };
 
