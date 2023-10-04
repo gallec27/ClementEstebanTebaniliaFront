@@ -16,7 +16,7 @@ function App() {
         <Router>
           <Routes>
             <Route path="/" element={<LoginForm />} /> 
-            <Route path="/" element={<ProductList />} />
+            <Route path="/productos" element={<ProductList user={user} />} />
             {/* <Route path="/productos" element={<ProductList />} /> */}
           </Routes>
         </Router>

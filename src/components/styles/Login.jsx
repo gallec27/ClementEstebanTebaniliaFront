@@ -16,8 +16,7 @@ const RegistrationForm = styled.div`
   padding: 10px;
   max-width: 500px;
   width: 100%;
-  height: auto;
-  margin-top: 50px;
+  height: auto;  
   margin-left: 10px;
   margin-right: 10px;
   border-radius: 15px;

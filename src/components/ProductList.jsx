@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
 import { useUserContext } from "./UserContext";
 import {
   FilterContainer,
@@ -6,7 +7,7 @@ import {
   Select,
   CheckboxLabel,
   CheckboxInput,
-  ResetButton
+  ResetButton,
 } from "./styles/SearchFilter";
 
 import {
@@ -14,10 +15,10 @@ import {
   ProductImage,
   CardContainer,
   Button,
-  Title  
+  Title,
 } from "./styles/Card";
 
-import { NavBar, Logo, UserInfo, Body } from "./styles/Layout";
+import { NavBar, Logo, UserInfo, Body, Footer } from "./styles/Layout";
 
 const ProductList = () => {
   const { user } = useUserContext();
@@ -32,14 +33,22 @@ const ProductList = () => {
   const [categories, setCategories] = useState([]); // Estado para almacenar categorías
 
   useEffect(() => {
-    Promise.all([
-      fetch("/api/products/categories").then((res) => res.json()),
-      fetch("/api/products/list").then((res) => res.json()),
-    ]).then(([categoriesData, productsData]) => {
-      setCategories(categoriesData);
-      setProducts(productsData);
-      setFilteredProducts(productsData);
-    });
+    // Utiliza Axios para hacer las peticiones HTTP
+    axios
+      .all([
+        axios.get("/api/products/categories"),
+        axios.get("/api/products/list"),
+      ])
+      .then(
+        axios.spread((categoriesResponse, productsResponse) => {
+          setCategories(categoriesResponse.data);
+          setProducts(productsResponse.data);
+          setFilteredProducts(productsResponse.data);
+        })
+      )
+      .catch((error) => {
+        console.error("Error al obtener datos:", error);
+      });
   }, []);
 
   const handleAddToCart = (product) => {
@@ -79,14 +88,16 @@ const ProductList = () => {
 
   const handleCategoryChange = (event) => {
     const categoryName = event.target.value;
-    const categoryObject = categories.find((cat) => cat.nombre_cat.toLowerCase() === categoryName.toLowerCase());
+    const categoryObject = categories.find(
+      (cat) => cat.nombre_cat.toLowerCase() === categoryName.toLowerCase()
+    );
     if (categoryObject) {
       setCategory(categoryObject.nombre);
       filterProducts(searchTerm, minPrice, categoryObject.id, sortByPrice);
-    } else {      
+    } else {
       setCategory("Todas las categorías");
       const idCat = 0;
-      filterProducts(searchTerm, minPrice, idCat, sortByPrice); 
+      filterProducts(searchTerm, minPrice, idCat, sortByPrice);
     }
   };
 
@@ -121,11 +132,9 @@ const ProductList = () => {
       );
     }
 
-    // Filtrar por categoría   
+    // Filtrar por categoría
     if (cat > 0) {
-      filtered = filtered.filter(
-        (product) => product.id_cat === cat
-      );
+      filtered = filtered.filter((product) => product.id_cat === cat);
     }
 
     // Ordenar por precio si es necesario
@@ -141,21 +150,19 @@ const ProductList = () => {
       <NavBar>
         <Logo src="/image/logo1.png" alt="logo_tebanilia" />
         <UserInfo>
-          {user ? (
-            <span>Hola, {user.nombre}</span>
-          ) : null}
+          {user ? <span>Hola, {user}</span> : null} 
         </UserInfo>
       </NavBar>
       <Title>Lista de Productos</Title>
       <FilterContainer>
         <SearchInput
-          type="text" // Cambiado a "text"
+          type="text" 
           placeholder="Buscar por descripción"
           value={searchTerm}
           onChange={handleSearchChange}
         />
         <SearchInput
-          type="text" // Cambiado a "text"
+          type="text" 
           placeholder="Precio mínimo"
           value={minPrice}
           onChange={handleMinPriceChange}
@@ -170,13 +177,15 @@ const ProductList = () => {
         </Select>
         <CheckboxLabel>
           Ordenar por precio:
-          < CheckboxInput
+          <CheckboxInput
             type="checkbox"
             checked={sortByPrice}
             onChange={handleSortByPriceChange}
           />
         </CheckboxLabel>
-        <ResetButton onClick={handleResetFilters}>Restablecer Filtros</ResetButton>
+        <ResetButton onClick={handleResetFilters}>
+          Restablecer Filtros
+        </ResetButton>
       </FilterContainer>
       <CardContainer>
         {filteredProducts.length > 0 ? (
@@ -189,7 +198,7 @@ const ProductList = () => {
               />
               <p>{product.detalle}</p>
               <p>Precio: ${product.precio}</p>
-              {user.nombre !== "Administrador" ? (
+              {user.nivelAcceso !== "client" ? (
                 <Button onClick={() => handleDetails(product)}>Detalle</Button>
               ) : (
                 <Button onClick={() => handleEdit(product)}>Modificar</Button>
@@ -202,6 +211,9 @@ const ProductList = () => {
           <p>Cargando...</p>
         )}
       </CardContainer>
+      <Footer>
+        <Logo src="/image/logo.png" alt="logo_tebanilia" />
+      </Footer>
     </Body>
   );
 };

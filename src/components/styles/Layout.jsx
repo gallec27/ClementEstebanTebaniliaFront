@@ -17,6 +17,9 @@ const GlobalStyle = styled.div`
 
 // Define el estilo del body
 const Body = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
   min-width: 290px;
   min-height: 100vh;
   background-color: #5b8e7d;
@@ -68,7 +71,7 @@ const NavBar = styled.nav`
   padding-left: 10px;
   padding-right: 10px;
   flex-wrap: wrap;
-  background-color: #bc4b51; 
+  background-color: #bc4b51;
 `;
 
 // Define el estilo de los enlaces en la barra de navegación
@@ -111,10 +114,13 @@ const LogoImage = styled.img`
 // Define el estilo del footer
 const Footer = styled.footer`
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   justify-content: space-between;
-  background-color: var(--header-footer-color);
-  height: auto;
+  align-items: center;
+  padding-left: 10px;
+  padding-right: 10px;
+  flex-wrap: wrap;
+  background-color: #bc4b51;
 `;
 
 // Define el estilo del logo en el footer
