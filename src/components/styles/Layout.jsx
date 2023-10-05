@@ -215,7 +215,6 @@ const UserInfo = styled.div`
   }
 `;
 
-// Exporta todos los estilos
 export {
   GlobalStyle,
   Body,

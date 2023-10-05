@@ -15,14 +15,14 @@ import {
 } from "./styles/Login";
 import { NavBar, Logo, UserInfo, Body, Footer, FooterLogo } from "./styles/Layout";
 
-const LoginForm = () => {
+const RegisterForm = () => {
   const setUser = useStore((state) => state.setUser);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  const handleLogin = async () => {
+  const handleRegister = async () => {
     // Verificar campos vacíos
     if (email.trim() === "" || password.trim() === "") {
       setError("Por favor, complete todos los campos.");
@@ -43,7 +43,6 @@ const LoginForm = () => {
       });
   
       if (response.status === 200 && response.data.success) {
-        console.log("Usuario que viene desde backend:",response.data.user)
         setUser(response.data.user);
         navigate(response.data.redirectTo);
       } else {        
@@ -73,7 +72,47 @@ const LoginForm = () => {
       <Container>
         <RegistrationForm>
           <FormGroup>
-            <FormGroupTitle>Iniciar Sesión</FormGroupTitle>
+            <FormGroupTitle>Registro de usuario</FormGroupTitle>
+          </FormGroup>
+          <FormGroup>
+            <FormInput
+              type="text"
+              placeholder="Nombre"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+            />
+          </FormGroup>
+          <FormGroup>
+            <FormInput
+              type="text"
+              placeholder="Apellido"
+              value={surname}
+              onChange={(e) => setSurname(e.target.value)}
+            />
+          </FormGroup>
+          <FormGroup>
+            <FormInput
+              type="date"
+              placeholder="Fecha nacimiento"
+              value={birthDay}
+              onChange={(e) => setBirthDay(e.target.value)}
+            />
+          </FormGroup>
+          <FormGroup>
+            <FormInput
+              type="text"
+              placeholder="Dirección"
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+            />
+          </FormGroup>
+          <FormGroup>
+            <FormInput
+              type="text"
+              placeholder="Localidad"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+            />
           </FormGroup>
           <FormGroup>
             <FormInput
@@ -92,7 +131,7 @@ const LoginForm = () => {
             />
           </FormGroup>
           <FormGroup>
-            <FormButton onClick={handleLogin}>Iniciar Sesión</FormButton>
+            <FormButton onClick={handleLogin}>Registrarse</FormButton>
           </FormGroup>
           {error && <FormGroupError style={{ color: "red" }}>{error}</FormGroupError>}
         </RegistrationForm>
@@ -105,4 +144,4 @@ const LoginForm = () => {
   );
 };
 
-export default LoginForm;
+export default RegisterForm;

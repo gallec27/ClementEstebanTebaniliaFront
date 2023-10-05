@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import useStore from "../store/store";
 import axios from "axios";
-import { useUserContext } from "./UserContext";
 import {
   FilterContainer,
   SearchInput,
@@ -18,22 +19,26 @@ import {
   Title,
 } from "./styles/Card";
 
+import {  
+  FormButton  
+} from "./styles/Login";
+
 import { NavBar, Logo, UserInfo, Body, Footer } from "./styles/Layout";
 
-const ProductList = () => {
-  const { user } = useUserContext();
+const ProductList = ({ user }) => {
+  const navigate = useNavigate();
+  const setUser = useStore((state) => state.setUser);
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [cartItems, setCartItems] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [minPrice, setMinPrice] = useState("");
-  const [category, setCategory] = useState(0); // Inicializar con el valor 0
+  const [category, setCategory] = useState(0);
   const [sortByPrice, setSortByPrice] = useState(false);
-  const [resetFilters, setResetFilters] = useState(false); // Nuevo estado
-  const [categories, setCategories] = useState([]); // Estado para almacenar categorías
+  const [resetFilters, setResetFilters] = useState(false);
+  const [categories, setCategories] = useState([]);
 
   useEffect(() => {
-    // Utiliza Axios para hacer las peticiones HTTP
     axios
       .all([
         axios.get("/api/products/categories"),
@@ -145,24 +150,34 @@ const ProductList = () => {
     setFilteredProducts(filtered);
   };
 
+  const handleLogout = () => {
+    setUser(null);
+    navigate("/");
+  };
+
   return (
     <Body>
       <NavBar>
         <Logo src="/image/logo1.png" alt="logo_tebanilia" />
         <UserInfo>
-          {user ? <span>Hola, {user}</span> : null} 
+          {user ? (
+            <>
+              <span>{user.nombre}</span>
+              <FormButton onClick={handleLogout}>Logout</FormButton>
+            </>
+          ) : null}
         </UserInfo>
       </NavBar>
       <Title>Lista de Productos</Title>
       <FilterContainer>
         <SearchInput
-          type="text" 
+          type="text"
           placeholder="Buscar por descripción"
           value={searchTerm}
           onChange={handleSearchChange}
         />
         <SearchInput
-          type="text" 
+          type="text"
           placeholder="Precio mínimo"
           value={minPrice}
           onChange={handleMinPriceChange}
@@ -198,7 +213,7 @@ const ProductList = () => {
               />
               <p>{product.detalle}</p>
               <p>Precio: ${product.precio}</p>
-              {user.nivelAcceso !== "client" ? (
+              {user.nivelAcceso !== "admin" ? (
                 <Button onClick={() => handleDetails(product)}>Detalle</Button>
               ) : (
                 <Button onClick={() => handleEdit(product)}>Modificar</Button>
