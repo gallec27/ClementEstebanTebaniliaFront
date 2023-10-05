@@ -4,16 +4,17 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import {
   Container,
-  RegistrationForm,
-  FormGroup,
+  LoginFormSt,
+  FormGroupLogin,
   FormGroupTitle,
-  FormGroupError,
-  FormLabel,
+  FormGroupError,  
   FormButton,
   FormInput,
-  UppercaseText,
-} from "./styles/Login";
-import { NavBar, Logo, UserInfo, Body, Footer, FooterLogo } from "./styles/Layout";
+  FormLabelError,
+  RegisterButton,
+  FormGroupRegisterButton
+  } from "./styles/Login";
+import { NavBar, Logo, Body, Footer } from "./styles/Layout";
 
 const LoginForm = () => {
   const setUser = useStore((state) => state.setUser);
@@ -65,37 +66,47 @@ const LoginForm = () => {
     }
   };
 
+  const navigateToRegister = () => {
+    navigate("/register"); 
+  };
+
   return (
     <Body>
       <NavBar>
         <Logo src="/image/logo1.png" alt="logo_tebanilia" />
       </NavBar>
       <Container>
-        <RegistrationForm>
-          <FormGroup>
+        <LoginFormSt>
+          <FormGroupLogin>
             <FormGroupTitle>Iniciar Sesión</FormGroupTitle>
-          </FormGroup>
-          <FormGroup>
+          </FormGroupLogin>
+          <FormGroupLogin>
             <FormInput
               type="text"
               placeholder="Correo electrónico"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
-          </FormGroup>
-          <FormGroup>
+          </FormGroupLogin>
+          <FormGroupLogin>
             <FormInput
               type="password"
               placeholder="Contraseña"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
-          </FormGroup>
-          <FormGroup>
+          </FormGroupLogin>
+          <FormGroupLogin>
             <FormButton onClick={handleLogin}>Iniciar Sesión</FormButton>
-          </FormGroup>
-          {error && <FormGroupError style={{ color: "red" }}>{error}</FormGroupError>}
-        </RegistrationForm>
+          </FormGroupLogin>
+          <FormGroupRegisterButton>           
+            <RegisterButton onClick={navigateToRegister}>Registrarse</RegisterButton>
+          </FormGroupRegisterButton>
+          {error && 
+            <FormGroupError style={{ color: "red" }}>
+              <FormLabelError>{error}</FormLabelError>              
+            </FormGroupError>}
+        </LoginFormSt>
       </Container>
       <Footer>
         <Logo src="/image/logo.png" alt="logo_tebanilia" />

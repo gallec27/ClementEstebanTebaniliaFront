@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import useStore from "../store/store";
 import axios from "axios";
+import { ContainerProducts } from "./styles/Products";
 import {
   FilterContainer,
   SearchInput,
@@ -19,11 +20,9 @@ import {
   Title,
 } from "./styles/Card";
 
-import {  
-  FormButton  
-} from "./styles/Login";
+import { Container, FormButton } from "./styles/Login";
 
-import { NavBar, Logo, UserInfo, Body, Footer } from "./styles/Layout";
+import { NavBar, Logo, UserInfo, Body, Footer, Main } from "./styles/Layout";
 
 const ProductList = ({ user }) => {
   const navigate = useNavigate();
@@ -158,7 +157,13 @@ const ProductList = ({ user }) => {
   return (
     <Body>
       <NavBar>
-        <Logo src="/image/logo1.png" alt="logo_tebanilia" />
+        <Link to="/" onClick={handleLogout}>
+          <Logo
+            src="/image/logo1.png"
+            alt="logo_tebanilia"
+            style={{ cursor: "pointer" }}
+          />
+        </Link>
         <UserInfo>
           {user ? (
             <>
@@ -168,64 +173,68 @@ const ProductList = ({ user }) => {
           ) : null}
         </UserInfo>
       </NavBar>
-      <Title>Lista de Productos</Title>
-      <FilterContainer>
-        <SearchInput
-          type="text"
-          placeholder="Buscar por descripción"
-          value={searchTerm}
-          onChange={handleSearchChange}
-        />
-        <SearchInput
-          type="text"
-          placeholder="Precio mínimo"
-          value={minPrice}
-          onChange={handleMinPriceChange}
-        />
-        <Select value={category} onChange={handleCategoryChange}>
-          <option value="">Todas las categorías</option>
-          {categories.map((cat) => (
-            <option key={cat.id} value={cat.nombre_cat}>
-              {cat.nombre_cat}
-            </option>
-          ))}
-        </Select>
-        <CheckboxLabel>
-          Ordenar por precio:
-          <CheckboxInput
-            type="checkbox"
-            checked={sortByPrice}
-            onChange={handleSortByPriceChange}
+      <ContainerProducts>
+        <Title>Lista de Productos</Title>
+        <FilterContainer>
+          <SearchInput
+            type="text"
+            placeholder="Buscar por descripción"
+            value={searchTerm}
+            onChange={handleSearchChange}
           />
-        </CheckboxLabel>
-        <ResetButton onClick={handleResetFilters}>
-          Restablecer Filtros
-        </ResetButton>
-      </FilterContainer>
-      <CardContainer>
-        {filteredProducts.length > 0 ? (
-          filteredProducts.map((product) => (
-            <Card key={product.id}>
-              <h2>{product.nombre}</h2>
-              <ProductImage
-                src={`/api/public/uploads/products/${product.imagen}`}
-                alt={product.nombre}
-              />
-              <p>{product.detalle}</p>
-              <p>Precio: ${product.precio}</p>
-              {user.nivelAcceso !== "admin" ? (
-                <Button onClick={() => handleDetails(product)}>Detalle</Button>
-              ) : (
-                <Button onClick={() => handleEdit(product)}>Modificar</Button>
-              )}
-            </Card>
-          ))
-        ) : products.length > 0 ? (
-          <p>Productos no disponibles</p>
-        ) : (
-          <p>Cargando...</p>
-        )}
-      </CardContainer>
+          <SearchInput
+            type="text"
+            placeholder="Precio mínimo"
+            value={minPrice}
+            onChange={handleMinPriceChange}
+          />
+          <Select value={category} onChange={handleCategoryChange}>
+            <option value="">Todas las categorías</option>
+            {categories.map((cat) => (
+              <option key={cat.id} value={cat.nombre_cat}>
+                {cat.nombre_cat}
+              </option>
+            ))}
+          </Select>
+          <CheckboxLabel>
+            Ordenar por precio:
+            <CheckboxInput
+              type="checkbox"
+              checked={sortByPrice}
+              onChange={handleSortByPriceChange}
+            />
+          </CheckboxLabel>
+          <ResetButton onClick={handleResetFilters}>
+            Restablecer Filtros
+          </ResetButton>
+        </FilterContainer>
+        <CardContainer>
+          {filteredProducts.length > 0 ? (
+            filteredProducts.map((product) => (
+              <Card key={product.id}>
+                <h2>{product.nombre}</h2>
+                <ProductImage
+                  src={`/api/public/uploads/products/${product.imagen}`}
+                  alt={product.nombre}
+                />
+                <p>{product.detalle}</p>
+                <p>Precio: ${product.precio}</p>
+                {user.nivelAcceso !== "admin" ? (
+                  <Button onClick={() => handleDetails(product)}>
+                    Detalle
+                  </Button>
+                ) : (
+                  <Button onClick={() => handleEdit(product)}>Modificar</Button>
+                )}
+              </Card>
+            ))
+          ) : products.length > 0 ? (
+            <p>Productos no disponibles</p>
+          ) : (
+            <p>Cargando...</p>
+          )}
+        </CardContainer>
+      </ContainerProducts>
       <Footer>
         <Logo src="/image/logo.png" alt="logo_tebanilia" />
       </Footer>

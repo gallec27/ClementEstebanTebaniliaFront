@@ -4,6 +4,7 @@ import LoginForm from "./components/LoginForm";
 import ProductList from "./components/ProductList";
 import useStore from "./store/store";
 import ResetStyles from "./components/styles/Reset";
+import RegisterForm from "./components/RegisterForm";
 
 function App() {
   const user = useStore((state) => state.user);
@@ -14,12 +15,16 @@ function App() {
       <Router>
         <Routes>
           {/* Ruta para la página de inicio de sesión */}
-          <Route path="/" element={user ? <Navigate to="/productos" /> : <LoginForm />} />
+          <Route path="/" element={user ? <Navigate to="/products" /> : <LoginForm />} />
 
           {/* Ruta para la página de productos */}
           <Route
-            path="/productos"
+            path="/products"
             element={user ? <ProductList user={user} /> : <Navigate to="/" />}
+          />
+
+          <Route
+            path="/register" element={<RegisterForm/>}
           />
         </Routes>
       </Router>
