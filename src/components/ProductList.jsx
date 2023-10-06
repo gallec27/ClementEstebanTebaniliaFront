@@ -167,7 +167,7 @@ const ProductList = ({ user }) => {
         <UserInfo>
           {user ? (
             <>
-              <span>{user.nombre}</span>
+              <span>{user.firstName}</span>
               <FormButton onClick={handleLogout}>Logout</FormButton>
             </>
           ) : null}
