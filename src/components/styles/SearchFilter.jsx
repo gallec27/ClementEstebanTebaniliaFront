@@ -66,7 +66,7 @@ const ResetButton = styled.button`
   border: none;
   border-radius: 5px;
   cursor: pointer;
-  margin-top: 10px;
+  margin: 5px;
   width: 50%;
 
   @media (min-width: 768px) {

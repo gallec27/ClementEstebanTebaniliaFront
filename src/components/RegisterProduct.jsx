@@ -12,11 +12,15 @@ import {
   FormInput,
   FormLabelError,
   FormLabelInput,
+  FormTextarea,
 } from "./styles/Login";
-import { NavBar, Logo, Body, Footer } from "./styles/Layout";
+import { NavBar, Logo, Body, Footer, UserInfo } from "./styles/Layout";
 
-const RegisterProduct = () => {
+import { Select } from "./styles/SearchFilter";
+
+const RegisterProduct = ({ user }) => {
   const setUser = useStore((state) => state.setUser);
+  const categories = useStore((state) => state.categories);
   const [productCode, setProductCode] = useState("");
   const [productName, setProductName] = useState("");
   const [productDetail, setProductDetail] = useState("");
@@ -83,16 +87,40 @@ const RegisterProduct = () => {
     }
   };
 
+  const handleCategoryChange = (event) => {
+    const categoryName = event.target.value;
+    const categoryObject = categories.find(
+      (cat) => cat.categoryName.toLowerCase() === categoryName.toLowerCase()
+    );
+
+    if (categoryObject) {
+      setProductCategory(categoryObject);      
+    }
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+    navigate("/");
+  };
+
   return (
     <Body>
       <NavBar>
-        <Link to="/">
+        <Link to="/" >
           <Logo
             src="/image/logo1.png"
             alt="logo_tebanilia"
             style={{ cursor: "pointer" }}
           />
         </Link>
+        <UserInfo>
+          {user ? (
+            <>
+              <span>{user.firstName}</span>
+              <FormButton onClick={handleLogout}>Logout</FormButton>
+            </>
+          ) : null}
+        </UserInfo>
       </NavBar>
       <Container>
         <RegistrationForm>
@@ -133,8 +161,7 @@ const RegisterProduct = () => {
           </FormGroupRegister>
           <FormGroupRegister>
             <FormLabelInput>Descripción:</FormLabelInput>
-            <FormInput
-              type="text"
+            <FormTextarea
               value={productDescription}
               onChange={(e) => setProductDescription(e.target.value)}
             />
@@ -149,11 +176,19 @@ const RegisterProduct = () => {
           </FormGroupRegister>
           <FormGroupRegister>
             <FormLabelInput>Categoría:</FormLabelInput>
-            <FormInput
+            <Select value={productCategory.categoryName} onChange={handleCategoryChange}>
+              <option value="">Seleccione categoría</option>
+              {categories.map((cat) => (
+                <option key={cat.id} value={cat.categoryName}>
+                  {cat.categoryName}
+                </option>
+              ))}
+            </Select>
+            {/* <FormInput
               type="text"
               value={productCategory}
               onChange={(e) => setProductCategory(e.target.value)}
-            />
+            /> */}
           </FormGroupRegister>
           <FormGroupRegister>
             <FormButton onClick={handleRegister}>Guardar</FormButton>

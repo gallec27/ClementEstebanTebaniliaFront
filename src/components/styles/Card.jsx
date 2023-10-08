@@ -149,6 +149,46 @@ flex-wrap: wrap;
 }
 `;
 
+const ButtonContainerFilter = styled.div`  
+display: flex;
+padding: 8px;
+flex-direction: column;
+align-items: center;
+flex-wrap: wrap;
+
+@media (min-width: 768px) {
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+}
+`;
+
+const PopupContainer = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+`;
+
+const PopupContent = styled.div`
+  background-color: white;
+  padding: 20px;
+  border-radius: 5px;
+  text-align: center;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+`;
+
+const PopupText = styled.p`
+  color: red;
+  font-weight: bold;  
+  margin-bottom: 10px;  
+`;
+
 export {
   Card,
   ProductImage,
@@ -160,5 +200,9 @@ export {
   ProductDetailTitle,
   ProductDetailSubtitle,
   ProductPrice,
-  ButtonContainer
+  ButtonContainer,
+  PopupContainer,
+  PopupContent,
+  PopupText,  
+  ButtonContainerFilter
 };

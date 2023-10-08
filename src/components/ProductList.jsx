@@ -23,6 +23,10 @@ import {
   ProductDetailTitle,
   ProductPrice,
   ButtonContainer,
+  PopupContainer,
+  PopupContent,
+  PopupText,  
+  ButtonContainerFilter,
 } from "./styles/Card";
 
 import { FormButton } from "./styles/Login";
@@ -40,8 +44,11 @@ const ProductList = ({ user }) => {
   const [category, setCategory] = useState(0);
   const [sortByPrice, setSortByPrice] = useState(false);
   const [resetFilters, setResetFilters] = useState(false);
-  const [categories, setCategories] = useState([]);
+  const categories = useStore((state) => state.categories);
+  //const [categories, setCategories] = useState([]);
   const [isDescriptionVisible, setDescriptionVisible] = useState({});
+  const [errorMessage, setErrorMessage] = useState("");
+  const [showPopup, setShowPopup] = useState(false);
 
   useEffect(() => {
     axios
@@ -51,13 +58,15 @@ const ProductList = ({ user }) => {
       ])
       .then(
         axios.spread((categoriesResponse, productsResponse) => {
-          setCategories(categoriesResponse.data);
+          //setCategories(categoriesResponse.data);
+          useStore.setState({ categories: categoriesResponse.data });
           setProducts(productsResponse.data);
           setFilteredProducts(productsResponse.data);
         })
       )
       .catch((error) => {
         console.error("Error al obtener datos:", error);
+        navigate("/");
       });
   }, []);
 
@@ -73,8 +82,27 @@ const ProductList = ({ user }) => {
     // Lógica para editar el producto
   };
 
-  const handleDelete = (product) => {
-    // Lógica para editar el producto
+  const navigateToRegister = () => {
+    navigate("/products/register");
+  };
+
+  const handleDelete = async (product) => {
+    try {
+      const response = await axios.post("/api/products/delete", {
+        codigo: product.productCode
+      });
+      if (response.status === 200) {
+        setFilteredProducts((prevProducts) =>
+          prevProducts.filter((p) => p.productCode !== product.productCode)
+        );
+      } else {
+        setErrorMessage("Error al eliminar el producto.");
+        setShowPopup(true);
+      }
+    } catch (error) {
+      setErrorMessage("Error al eliminar el producto.");
+      setShowPopup(true);
+    }
   };
 
   const handleResetFilters = () => {
@@ -102,12 +130,10 @@ const ProductList = ({ user }) => {
 
   const handleCategoryChange = (event) => {
     const categoryName = event.target.value;
-    console.log("Categoría seleccionada del desplegable: ", categoryName);
     const categoryObject = categories.find(
       (cat) => cat.categoryName.toLowerCase() === categoryName.toLowerCase()
     );
 
-    console.log("Categoría encontrada: ", categoryObject);
     if (categoryObject) {
       setCategory(categoryObject.categoryName);
       filterProducts(searchTerm, minPrice, categoryObject.id, sortByPrice);
@@ -187,6 +213,16 @@ const ProductList = ({ user }) => {
         </UserInfo>
       </NavBar>
       <ContainerProducts>
+        {showPopup && (
+          <PopupContainer>
+            <PopupContent>
+              <PopupText>{errorMessage}</PopupText>
+              <ResetButton onClick={() => setShowPopup(false)}>
+                Cerrar
+              </ResetButton>
+            </PopupContent>
+          </PopupContainer>
+        )}
         <Title>Lista de Productos</Title>
         <FilterContainer>
           <SearchInput
@@ -217,9 +253,22 @@ const ProductList = ({ user }) => {
               onChange={handleSortByPriceChange}
             />
           </CheckboxLabel>
-          <ResetButton onClick={handleResetFilters}>
-            Restablecer Filtros
-          </ResetButton>
+          {user.role !== "admin" ? (
+            <ButtonContainerFilter>
+              <ResetButton onClick={handleResetFilters}>
+              Restablecer Filtros
+            </ResetButton>
+            </ButtonContainerFilter>
+          ) : (
+            <ButtonContainerFilter>
+              <Button onClick={handleResetFilters}>
+              Restablecer Filtros
+            </Button>
+            <Button onClick={navigateToRegister}>
+              Agregar producto
+            </Button>
+            </ButtonContainerFilter>
+          )}
         </FilterContainer>
         <CardContainer>
           {filteredProducts.length > 0 ? (
@@ -245,8 +294,16 @@ const ProductList = ({ user }) => {
                   </Button>
                 ) : (
                   <ButtonContainer>
-                      <Button onClick={() => handleEdit(product)}>Modificar</Button>
-                      <Button onClick={() => handleDelete(product)}>Eliminar</Button>
+                    <Button                      
+                      onClick={() => handleEdit(product)}
+                    >
+                      Modificar
+                    </Button>
+                    <Button                      
+                      onClick={() => handleDelete(product)}
+                    >
+                      Eliminar
+                    </Button>
                   </ButtonContainer>
                 )}
               </Card>

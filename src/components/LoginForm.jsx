@@ -43,8 +43,7 @@ const LoginForm = () => {
         password,
       });
   
-      if (response.status === 200 && response.data.success) {
-        console.log("Usuario que viene desde backend:",response.data.user)
+      if (response.status === 200 && response.data.success) {        
         setUser(response.data.user);
         navigate(response.data.redirectTo);
       } else {        
@@ -67,7 +66,7 @@ const LoginForm = () => {
   };
 
   const navigateToRegister = () => {
-    navigate("/register"); 
+    navigate("/users/register"); 
   };
 
   return (

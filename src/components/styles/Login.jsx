@@ -131,6 +131,14 @@ const FormInput = styled.input`
   outline: none;
 `;
 
+const FormTextarea = styled.textarea`
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  outline: none;
+  /* Agrega otros estilos según sea necesario */
+`;
+
 // Estilo para el grupo de formularios
 const FormGroupRegisterButton = styled.div`
   padding: 0.5rem;
@@ -161,5 +169,6 @@ export {
   FormGroupLogin,
   FormGroupRegister,
   RegisterButton,
-  FormGroupRegisterButton
+  FormGroupRegisterButton,
+  FormTextarea
 };
