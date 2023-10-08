@@ -31,6 +31,7 @@ const ProductImage = styled.img`
   width: auto;
   height: auto;
   margin: 0 auto;
+  border-radius: 8px;
   
   @media (min-width: 769px) {
     max-width: 300px;
@@ -65,18 +66,18 @@ const CardContainer = styled.div`
 `;
 
 const Button = styled.button`
-  background-color: #007bff;
+  background-color: #9b4747;
   color: white;
   border: none;
-  padding: 10px 20px;
+  padding: 4px;
   cursor: pointer;
   transition: background-color 0.3s ease;
   max-width: 150px;
-  margin: 0 auto;
-  border-radius: 10px;
+  margin: 4px;
+  border-radius: 5px;
 
   &:hover {
-    background-color: #0056b3;
+    background-color: #9e5d5d;
   }
 `;
 
@@ -94,4 +95,70 @@ const SearchInput = styled.input`
   width: 200px;
 `;
 
-export { Card, ProductImage, CardContainer, Button, Title, SearchInput };
+const FloatingDescription = styled.div`
+  position: absolute;
+  background-color: white;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+  padding: 10px;
+  display: none;
+  z-index: 1;
+
+  &.show {
+    display: block;
+  }
+`;
+
+
+// Estilo para el título del producto en detalle
+const ProductDetailTitle = styled.h2`
+  font-size: 1.1rem;
+  font-weight: bold;
+  font-style: oblique;
+  padding-top: 5px;
+`;
+
+// Estilo para el subtítulo del producto en detalle
+const ProductDetailSubtitle = styled.h3`
+  font-size: 1rem;
+  font-weight: normal;
+  font-style: oblique;
+  padding-top: 5px;
+`;
+
+// Estilo para el subtítulo del producto en detalle
+const ProductPrice = styled.h3`
+  font-size: 1rem;
+  font-weight: bold;
+  padding-top: 5px;
+  padding-bottom: 5px;
+`;
+
+// Estilo para el contenedor de botones
+const ButtonContainer = styled.div`  
+display: flex;
+padding: 8px;
+flex-direction: column;
+margin-bottom: 20px;
+align-items: center;
+flex-wrap: wrap;
+
+@media (min-width: 768px) {
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+}
+`;
+
+export {
+  Card,
+  ProductImage,
+  CardContainer,
+  Button,
+  Title,
+  SearchInput,
+  FloatingDescription,
+  ProductDetailTitle,
+  ProductDetailSubtitle,
+  ProductPrice,
+  ButtonContainer
+};

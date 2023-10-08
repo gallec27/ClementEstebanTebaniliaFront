@@ -18,11 +18,16 @@ import {
   CardContainer,
   Button,
   Title,
+  FloatingDescription,
+  ProductDetailSubtitle,
+  ProductDetailTitle,
+  ProductPrice,
+  ButtonContainer,
 } from "./styles/Card";
 
-import { Container, FormButton } from "./styles/Login";
+import { FormButton } from "./styles/Login";
 
-import { NavBar, Logo, UserInfo, Body, Footer, Main } from "./styles/Layout";
+import { NavBar, Logo, UserInfo, Body, Footer } from "./styles/Layout";
 
 const ProductList = ({ user }) => {
   const navigate = useNavigate();
@@ -36,6 +41,7 @@ const ProductList = ({ user }) => {
   const [sortByPrice, setSortByPrice] = useState(false);
   const [resetFilters, setResetFilters] = useState(false);
   const [categories, setCategories] = useState([]);
+  const [isDescriptionVisible, setDescriptionVisible] = useState({});
 
   useEffect(() => {
     axios
@@ -67,6 +73,10 @@ const ProductList = ({ user }) => {
     // Lógica para editar el producto
   };
 
+  const handleDelete = (product) => {
+    // Lógica para editar el producto
+  };
+
   const handleResetFilters = () => {
     setSearchTerm("");
     setMinPrice("");
@@ -92,11 +102,14 @@ const ProductList = ({ user }) => {
 
   const handleCategoryChange = (event) => {
     const categoryName = event.target.value;
+    console.log("Categoría seleccionada del desplegable: ", categoryName);
     const categoryObject = categories.find(
-      (cat) => cat.nombre_cat.toLowerCase() === categoryName.toLowerCase()
+      (cat) => cat.categoryName.toLowerCase() === categoryName.toLowerCase()
     );
+
+    console.log("Categoría encontrada: ", categoryObject);
     if (categoryObject) {
-      setCategory(categoryObject.nombre);
+      setCategory(categoryObject.categoryName);
       filterProducts(searchTerm, minPrice, categoryObject.id, sortByPrice);
     } else {
       setCategory("Todas las categorías");
@@ -138,7 +151,7 @@ const ProductList = ({ user }) => {
 
     // Filtrar por categoría
     if (cat > 0) {
-      filtered = filtered.filter((product) => product.id_cat === cat);
+      filtered = filtered.filter((product) => product.category_id === cat);
     }
 
     // Ordenar por precio si es necesario
@@ -191,8 +204,8 @@ const ProductList = ({ user }) => {
           <Select value={category} onChange={handleCategoryChange}>
             <option value="">Todas las categorías</option>
             {categories.map((cat) => (
-              <option key={cat.id} value={cat.nombre_cat}>
-                {cat.nombre_cat}
+              <option key={cat.id} value={cat.categoryName}>
+                {cat.categoryName}
               </option>
             ))}
           </Select>
@@ -211,20 +224,30 @@ const ProductList = ({ user }) => {
         <CardContainer>
           {filteredProducts.length > 0 ? (
             filteredProducts.map((product) => (
-              <Card key={product.id}>
-                <h2>{product.nombre}</h2>
+              <Card key={product.id} onClick={() => handleDetails(product.id)}>
+                <ProductDetailTitle>{product.productName}</ProductDetailTitle>
                 <ProductImage
-                  src={`/api/public/uploads/products/${product.imagen}`}
-                  alt={product.nombre}
+                  src={`/api/public/uploads/products/${product.productImage}`}
+                  alt={product.productName}
                 />
-                <p>{product.detalle}</p>
-                <p>Precio: ${product.precio}</p>
-                {user.nivelAcceso !== "admin" ? (
-                  <Button onClick={() => handleDetails(product)}>
-                    Detalle
+                <ProductDetailSubtitle>
+                  {product.productDetail}
+                </ProductDetailSubtitle>
+                <FloatingDescription
+                  className={isDescriptionVisible[product.id] ? "show" : ""}
+                >
+                  {product.productDescription}
+                </FloatingDescription>
+                <ProductPrice>Precio: ${product.productPrice}</ProductPrice>
+                {user.role !== "admin" ? (
+                  <Button onClick={() => handleAddToCart(product)}>
+                    Comprar
                   </Button>
                 ) : (
-                  <Button onClick={() => handleEdit(product)}>Modificar</Button>
+                  <ButtonContainer>
+                      <Button onClick={() => handleEdit(product)}>Modificar</Button>
+                      <Button onClick={() => handleDelete(product)}>Eliminar</Button>
+                  </ButtonContainer>
                 )}
               </Card>
             ))

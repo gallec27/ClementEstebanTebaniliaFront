@@ -35,13 +35,7 @@ const CardContainer = styled.div`
   box-sizing: border-box;
 `;
 
-// Estilo para el contenedor de botones
-const ButtonContainer = styled.div`
-  width: 200px;
-  display: flex;
-  justify-content: space-evenly;
-  margin-top: 5px;
-`;
+
 
 // Estilo para el botón de agregar al carrito
 const CartButton = styled.button`

@@ -16,29 +16,9 @@ const ProductDetailImage = styled.img`
   margin: 1rem;
 `;
 
-// Estilo para el título del producto en detalle
-const ProductDetailTitle = styled.h2`
-  font-size: 1.1rem;
-  font-weight: bold;
-  font-style: oblique;
-  padding-top: 5px;
-`;
 
-// Estilo para el subtítulo del producto en detalle
-const ProductDetailSubtitle = styled.h3`
-  font-size: 1rem;
-  font-weight: normal;
-  font-style: oblique;
-  padding-top: 5px;
-`;
 
-// Estilo para la descripción del producto en detalle
-const ProductDetailDescription = styled.p`
-  font-size: 0.9rem;
-  font-weight: normal;
-  font-style: normal;
-  padding-top: 5px;
-`;
+
 
 // Estilo para el contenedor del detalle del producto
 const ProductDetailContainer = styled.div`
@@ -71,10 +51,7 @@ const CartButton = styled.button`
 
 export {
   Container,
-  ProductDetailImage,
-  ProductDetailTitle,
-  ProductDetailSubtitle,
-  ProductDetailDescription,
+  ProductDetailImage,  
   ProductDetailContainer,
   ButtonContainer,
   CartButton,

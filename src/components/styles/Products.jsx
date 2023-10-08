@@ -8,4 +8,6 @@ const ContainerProducts = styled.div`
   flex-direction: column;
 `;
 
-export { ContainerProducts };
+export {
+  ContainerProducts,  
+};
