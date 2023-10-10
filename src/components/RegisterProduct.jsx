@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import useStore from "../store/store";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -19,17 +19,39 @@ import { NavBar, Logo, Body, Footer, UserInfo } from "./styles/Layout";
 import { Select } from "./styles/SearchFilter";
 
 const RegisterProduct = ({ user }) => {
-  const setUser = useStore((state) => state.setUser);
+  const setUser = useStore((state) => state.setUser);  
   const categories = useStore((state) => state.categories);
+  const productToEdit = useStore((state) => state.productToEdit)
+  const [isEditing, setIsEditing] = useState(false); 
   const [productCode, setProductCode] = useState("");
   const [productName, setProductName] = useState("");
   const [productDetail, setProductDetail] = useState("");
-  const [productPrice, setProductPrice] = useState("");
-  const [productImage, setProductImage] = useState("");
+  const [productPrice, setProductPrice] = useState("");  
   const [productCategory, setProductCategory] = useState("");
   const [productDescription, setProductDescription] = useState("");
+  const [selectedImage, setSelectedImage] = useState(null);
   const [error, setError] = useState("");
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (productToEdit) {
+      setIsEditing(true);
+      
+      setProductCode(productToEdit.productCode);
+      setProductName(productToEdit.productName);
+      setProductDetail(productToEdit.productDetail);
+      setProductPrice(productToEdit.productPrice);
+      setProductDescription(productToEdit.productDescription);
+      
+      const categoryObject = categories.find(
+        (cat) => cat.id === productToEdit.category_id
+      );
+      if (categoryObject) {
+        setProductCategory(categoryObject);
+      }
+      // No es necesario configurar selectedImage, ya que no puedes preestablecer un campo de archivo
+    }
+  }, []);
 
   const handleRegister = async () => {
     setError("");
@@ -38,9 +60,8 @@ const RegisterProduct = ({ user }) => {
       productCode.trim() === "" ||
       productName.trim() === "" ||
       productDetail.trim() === "" ||
-      productPrice.trim() === "" ||
-      productImage.trim() === "" ||
-      productCategory.trim() === "" ||
+      productPrice.trim() === "" ||      
+      productCategory.categoryName.trim() === "Seleccione categoría" ||
       productDescription.trim() === ""
     ) {
       setError("Por favor, complete todos los campos.");
@@ -53,19 +74,32 @@ const RegisterProduct = ({ user }) => {
       return;
     }
 
+    if (!selectedImage) {
+      setError("Por favor, seleccione una imagen.");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("productCode", productCode);
+    formData.append("productName", productName);
+    formData.append("productDetail", productDetail);
+    formData.append("productPrice", productPrice);
+    formData.append("productDescription", productDescription);
+    formData.append("category_id", productCategory.id);
+    if (selectedImage) {
+      formData.append("imagen", selectedImage);
+    }
+
     try {
-      const response = await axios.post("/api/products/create", {
-        productCode,
-        productName,
-        productDetail,
-        productPrice,
-        productDescription,
-        productImage,
-        productCategory,
+      const response = await axios.post("/api/products/edit", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
       });
 
       if (response.status === 200 && response.data.success) {
-        setUser(response.data.user);
+        useStore.getState().clearProductToEdit();
+        
         navigate(response.data.redirectTo);
       } else {
         setError(response.data.message);
@@ -94,7 +128,7 @@ const RegisterProduct = ({ user }) => {
     );
 
     if (categoryObject) {
-      setProductCategory(categoryObject);      
+      setProductCategory(categoryObject);
     }
   };
 
@@ -106,7 +140,7 @@ const RegisterProduct = ({ user }) => {
   return (
     <Body>
       <NavBar>
-        <Link to="/" >
+        <Link to="/">
           <Logo
             src="/image/logo1.png"
             alt="logo_tebanilia"
@@ -125,7 +159,9 @@ const RegisterProduct = ({ user }) => {
       <Container>
         <RegistrationForm>
           <FormGroupRegister>
-            <FormGroupTitle>Registro de productos</FormGroupTitle>
+            <FormGroupTitle>
+              {isEditing ? "Editar Producto" : "Registro de productos"}
+            </FormGroupTitle>
           </FormGroupRegister>
           <FormGroupRegister>
             <FormLabelInput>Código:</FormLabelInput>
@@ -133,6 +169,7 @@ const RegisterProduct = ({ user }) => {
               type="text"
               value={productCode}
               onChange={(e) => setProductCode(e.target.value)}
+              readOnly={isEditing}
             />
           </FormGroupRegister>
           <FormGroupRegister>
@@ -170,13 +207,21 @@ const RegisterProduct = ({ user }) => {
             <FormLabelInput>Imagen:</FormLabelInput>
             <FormInput
               type="file"
-              value={productImage}
-              onChange={(e) => setProductImage(e.target.value)}
+              onChange={(e) => {
+                if (e.target.files.length > 0) {
+                  setSelectedImage(e.target.files[0]);
+                } else {
+                  setSelectedImage(null);
+                }
+              }}
             />
           </FormGroupRegister>
           <FormGroupRegister>
             <FormLabelInput>Categoría:</FormLabelInput>
-            <Select value={productCategory.categoryName} onChange={handleCategoryChange}>
+            <Select
+              value={productCategory.categoryName}
+              onChange={handleCategoryChange}
+            >
               <option value="">Seleccione categoría</option>
               {categories.map((cat) => (
                 <option key={cat.id} value={cat.categoryName}>
@@ -184,11 +229,6 @@ const RegisterProduct = ({ user }) => {
                 </option>
               ))}
             </Select>
-            {/* <FormInput
-              type="text"
-              value={productCategory}
-              onChange={(e) => setProductCategory(e.target.value)}
-            /> */}
           </FormGroupRegister>
           <FormGroupRegister>
             <FormButton onClick={handleRegister}>Guardar</FormButton>

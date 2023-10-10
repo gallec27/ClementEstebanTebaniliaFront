@@ -173,9 +173,12 @@ const PopupContainer = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
+  z-index: 100; 
 `;
 
 const PopupContent = styled.div`
+  max-width: 300px; 
+  width: 100%;
   background-color: white;
   padding: 20px;
   border-radius: 5px;
@@ -185,9 +188,11 @@ const PopupContent = styled.div`
 
 const PopupText = styled.p`
   color: red;
-  font-weight: bold;  
-  margin-bottom: 10px;  
+  font-weight: bold;
+  margin-bottom: 10px;
 `;
+
+
 
 export {
   Card,

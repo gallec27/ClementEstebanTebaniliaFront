@@ -17,15 +17,14 @@ import {
   ProductImage,
   CardContainer,
   Button,
-  Title,
-  FloatingDescription,
+  Title,  
   ProductDetailSubtitle,
   ProductDetailTitle,
   ProductPrice,
   ButtonContainer,
   PopupContainer,
   PopupContent,
-  PopupText,  
+  PopupText,
   ButtonContainerFilter,
 } from "./styles/Card";
 
@@ -45,8 +44,7 @@ const ProductList = ({ user }) => {
   const [sortByPrice, setSortByPrice] = useState(false);
   const [resetFilters, setResetFilters] = useState(false);
   const categories = useStore((state) => state.categories);
-  //const [categories, setCategories] = useState([]);
-  const [isDescriptionVisible, setDescriptionVisible] = useState({});
+  const productToEdit = useStore((state) => state.productToEdit);  
   const [errorMessage, setErrorMessage] = useState("");
   const [showPopup, setShowPopup] = useState(false);
 
@@ -58,14 +56,13 @@ const ProductList = ({ user }) => {
       ])
       .then(
         axios.spread((categoriesResponse, productsResponse) => {
-          //setCategories(categoriesResponse.data);
           useStore.setState({ categories: categoriesResponse.data });
           setProducts(productsResponse.data);
           setFilteredProducts(productsResponse.data);
+          useStore.getState().clearProductToEdit();
         })
       )
       .catch((error) => {
-        console.error("Error al obtener datos:", error);
         navigate("/");
       });
   }, []);
@@ -74,12 +71,31 @@ const ProductList = ({ user }) => {
     // Implementa la lógica para agregar productos al carrito aquí
   };
 
-  const handleDetails = (product) => {
-    // Lógica para mostrar detalles del producto
+  const toggleDescription = (productDescription) => {
+    console.log(productDescription);
+    setErrorMessage(productDescription);
+    setShowPopup(true);
   };
 
-  const handleEdit = (product) => {
-    // Lógica para editar el producto
+  const handleEdit = async (product) => {
+    try {
+      const productCode = product.productCode;
+
+      const response = await axios.get(
+        `/api/products/edit?code=${productCode}`
+      );
+
+      if (response.status === 200) {
+        useStore.setState({ productToEdit: response.data.productToEdit });
+        navigate("/products/register");
+      } else {
+        setErrorMessage("No se encontró el producto.");
+        setShowPopup(true);
+      }
+    } catch (error) {
+      setErrorMessage("Error al editar el producto.");
+      setShowPopup(true);
+    }
   };
 
   const navigateToRegister = () => {
@@ -89,7 +105,7 @@ const ProductList = ({ user }) => {
   const handleDelete = async (product) => {
     try {
       const response = await axios.post("/api/products/delete", {
-        codigo: product.productCode
+        codigo: product.productCode,
       });
       if (response.status === 200) {
         setFilteredProducts((prevProducts) =>
@@ -158,7 +174,7 @@ const ProductList = ({ user }) => {
       setMinPrice("");
       setCategory(0);
       setSortByPrice(false);
-      setResetFilters(false); // Restablecer la marca
+      setResetFilters(false);
     }
 
     // Filtrar por descripción
@@ -255,25 +271,21 @@ const ProductList = ({ user }) => {
           </CheckboxLabel>
           {user.role !== "admin" ? (
             <ButtonContainerFilter>
-              <ResetButton onClick={handleResetFilters}>
-              Restablecer Filtros
-            </ResetButton>
+              <Button onClick={handleResetFilters}>
+                Restablecer Filtros
+              </Button>
             </ButtonContainerFilter>
           ) : (
             <ButtonContainerFilter>
-              <Button onClick={handleResetFilters}>
-              Restablecer Filtros
-            </Button>
-            <Button onClick={navigateToRegister}>
-              Agregar producto
-            </Button>
+              <Button onClick={handleResetFilters}>Restablecer Filtros</Button>
+              <Button onClick={navigateToRegister}>Agregar producto</Button>
             </ButtonContainerFilter>
           )}
         </FilterContainer>
         <CardContainer>
           {filteredProducts.length > 0 ? (
             filteredProducts.map((product) => (
-              <Card key={product.id} onClick={() => handleDetails(product.id)}>
+              <Card key={product.id} onClick={() => toggleDescription(product.productDescription)}>
                 <ProductDetailTitle>{product.productName}</ProductDetailTitle>
                 <ProductImage
                   src={`/api/public/uploads/products/${product.productImage}`}
@@ -282,26 +294,19 @@ const ProductList = ({ user }) => {
                 <ProductDetailSubtitle>
                   {product.productDetail}
                 </ProductDetailSubtitle>
-                <FloatingDescription
-                  className={isDescriptionVisible[product.id] ? "show" : ""}
-                >
-                  {product.productDescription}
-                </FloatingDescription>
                 <ProductPrice>Precio: ${product.productPrice}</ProductPrice>
                 {user.role !== "admin" ? (
-                  <Button onClick={() => handleAddToCart(product)}>
-                    Comprar
-                  </Button>
+                  <ButtonContainer>
+                    <Button onClick={() => handleAddToCart(product)}>
+                      Comprar
+                    </Button>
+                  </ButtonContainer>
                 ) : (
                   <ButtonContainer>
-                    <Button                      
-                      onClick={() => handleEdit(product)}
-                    >
+                    <Button onClick={() => handleEdit(product)}>
                       Modificar
                     </Button>
-                    <Button                      
-                      onClick={() => handleDelete(product)}
-                    >
+                    <Button onClick={() => handleDelete(product)}>
                       Eliminar
                     </Button>
                   </ButtonContainer>
