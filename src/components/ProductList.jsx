@@ -17,7 +17,7 @@ import {
   ProductImage,
   CardContainer,
   Button,
-  Title,  
+  Title,
   ProductDetailSubtitle,
   ProductDetailTitle,
   ProductPrice,
@@ -44,7 +44,7 @@ const ProductList = ({ user }) => {
   const [sortByPrice, setSortByPrice] = useState(false);
   const [resetFilters, setResetFilters] = useState(false);
   const categories = useStore((state) => state.categories);
-  const productToEdit = useStore((state) => state.productToEdit);  
+  const productToEdit = useStore((state) => state.productToEdit);
   const [errorMessage, setErrorMessage] = useState("");
   const [showPopup, setShowPopup] = useState(false);
 
@@ -67,12 +67,29 @@ const ProductList = ({ user }) => {
       });
   }, []);
 
-  const handleAddToCart = (product) => {
+  const handleAddToCart = async (product) => {
+    try {
+      const response = await axios.post("/api/cart/addToCart", {
+        productCode: product.productCode, clientEmail: user.email
+      });
+      if (response.status === 200) {
+        setErrorMessage("Producto agregado al carrito.");
+        setShowPopup(true);
+      } else {
+        setErrorMessage("Error al agregar el producto.");
+        setShowPopup(true);
+      }
+    } catch (error) {
+      setErrorMessage("Error al agregar el producto.");
+      setShowPopup(true);
+    }
+  };
+
+  const handleCart = (product) => {
     // Implementa la lógica para agregar productos al carrito aquí
   };
 
-  const toggleDescription = (productDescription) => {
-    console.log(productDescription);
+  const toggleDescription = (productDescription) => {    
     setErrorMessage(productDescription);
     setShowPopup(true);
   };
@@ -180,14 +197,14 @@ const ProductList = ({ user }) => {
     // Filtrar por descripción
     if (search) {
       filtered = filtered.filter((product) =>
-        product.nombre.toLowerCase().includes(search.toLowerCase())
+        product.productName.toLowerCase().includes(search.toLowerCase())
       );
     }
 
     // Filtrar por precio mínimo si es un número válido
     if (min !== "" && !isNaN(parseFloat(min))) {
       filtered = filtered.filter(
-        (product) => product.precio >= parseFloat(min)
+        (product) => product.productPrice >= parseFloat(min)
       );
     }
 
@@ -198,7 +215,7 @@ const ProductList = ({ user }) => {
 
     // Ordenar por precio si es necesario
     if (sortBy) {
-      filtered.sort((a, b) => a.precio - b.precio);
+      filtered.sort((a, b) => a.productPrice - b.productPrice);
     }
 
     setFilteredProducts(filtered);
@@ -271,9 +288,8 @@ const ProductList = ({ user }) => {
           </CheckboxLabel>
           {user.role !== "admin" ? (
             <ButtonContainerFilter>
-              <Button onClick={handleResetFilters}>
-                Restablecer Filtros
-              </Button>
+              <Button onClick={handleResetFilters}>Restablecer Filtros</Button>
+              <Button onClick={handleCart}>Ver compra</Button>
             </ButtonContainerFilter>
           ) : (
             <ButtonContainerFilter>
@@ -285,9 +301,10 @@ const ProductList = ({ user }) => {
         <CardContainer>
           {filteredProducts.length > 0 ? (
             filteredProducts.map((product) => (
-              <Card key={product.id} onClick={() => toggleDescription(product.productDescription)}>
+              <Card key={product.id}>
                 <ProductDetailTitle>{product.productName}</ProductDetailTitle>
                 <ProductImage
+                  onClick={() => toggleDescription(product.productDescription)}
                   src={`/api/public/uploads/products/${product.productImage}`}
                   alt={product.productName}
                 />
