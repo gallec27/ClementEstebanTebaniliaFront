@@ -32,9 +32,11 @@ import { FormButton } from "./styles/Login";
 
 import { NavBar, Logo, UserInfo, Body, Footer } from "./styles/Layout";
 
-const ProductList = ({ user }) => {
+const ShoppingCart = ({ user }) => {
   const navigate = useNavigate();
   const setUser = useStore((state) => state.setUser);
+  const [order, setOrder] = useState(0);
+  const [orderDetails, setOrderDetails] = useState([]);
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -43,82 +45,83 @@ const ProductList = ({ user }) => {
   const [sortByPrice, setSortByPrice] = useState(false);
   const [resetFilters, setResetFilters] = useState(false);
   const categories = useStore((state) => state.categories);
-  const productToEdit = useStore((state) => state.productToEdit);
   const [errorMessage, setErrorMessage] = useState("");
   const [showPopup, setShowPopup] = useState(false);
 
   useEffect(() => {
-    axios
-      .all([
-        axios.get("/api/products/categories"),
-        axios.get("/api/products/list"),
-      ])
-      .then(
-        axios.spread((categoriesResponse, productsResponse) => {
-          useStore.setState({ categories: categoriesResponse.data });
-          setProducts(productsResponse.data);
-          setFilteredProducts(productsResponse.data);
-          useStore.getState().clearProductToEdit();
+    try {
+      axios
+        .get(`/api/cart/getOrder?userId=${user.id}`)
+        .then((response) => {
+          if (response.status === 200) {
+            console.log("ShoppingCart useEffect: ", response.data);
+            setOrder(response.data.order);
+            setOrderDetails(response.data.orderDetails);
+            setProducts(response.data.orderProducts);
+            setFilteredProducts(response.data.orderProducts);
+          } else {
+            setErrorMessage("No se encontró orden.");
+            setShowPopup(true);
+          }
         })
-      )
-      .catch((error) => {
-        navigate("/");
-      });
+        .catch((error) => {
+          console.log("ShoppingCart: ", error);
+          setErrorMessage("Error al buscar órdenes.");
+          setShowPopup(true);
+        });
+    } catch (error) {
+      console.log("ShoppingCart: ", error);
+      setErrorMessage("Error al buscar órdenes.");
+      setShowPopup(true);
+    }
   }, []);
 
-  const handleAddToCart = async (product) => {
+  const handleDelete = async (product) => {
     try {
-      const response = await axios.post("/api/cart/addToCart", {
-        productCode: product.productCode, clientEmail: user.email
+      const response = await axios.post("/api/cart/delete", {        
+        orderId: order.id,
+        orderDetailsId: orderDetails.find(
+          (detail) => detail.product_id === product.id
+        ).id,
+        totalProduct: orderDetails.find(
+          (detail) => detail.product_id === product.id
+        ).price
+      });
+
+      if (response.status === 200) {
+        setFilteredProducts((prevProducts) =>
+          prevProducts.filter((p) => p.productCode !== product.productCode)
+        );
+      } else {
+        setErrorMessage("Error al quitar el producto.");
+        setShowPopup(true);
+      }
+    } catch (error) {
+      setErrorMessage("Error al quitar el producto.");
+      setShowPopup(true);
+    }
+  };
+
+  const handleConfirm = async (product) => {
+    try {
+      const response = await axios.post("/api/products/delete", {
+        codigo: product.productCode,
       });
       if (response.status === 200) {
-        setErrorMessage("Producto agregado al carrito.");
-        setShowPopup(true);
+        setFilteredProducts((prevProducts) =>
+          prevProducts.filter((p) => p.productCode !== product.productCode)
+        );
       } else {
-        setErrorMessage("Error al agregar el producto.");
+        setErrorMessage("Error al eliminar el producto.");
         setShowPopup(true);
       }
     } catch (error) {
-      setErrorMessage("Error al agregar el producto.");
+      setErrorMessage("Error al eliminar el producto.");
       setShowPopup(true);
     }
   };
 
-  const handleCart = (product) => {
-    navigate("/cart/shoppingCart");
-  };
-
-  const toggleDescription = (productDescription) => {    
-    setErrorMessage(productDescription);
-    setShowPopup(true);
-  };
-
-  const handleEdit = async (product) => {
-    try {
-      const productCode = product.productCode;
-
-      const response = await axios.get(
-        `/api/products/edit?code=${productCode}`
-      );
-
-      if (response.status === 200) {
-        useStore.setState({ productToEdit: response.data.productToEdit });
-        navigate("/products/register");
-      } else {
-        setErrorMessage("No se encontró el producto.");
-        setShowPopup(true);
-      }
-    } catch (error) {
-      setErrorMessage("Error al editar el producto.");
-      setShowPopup(true);
-    }
-  };
-
-  const navigateToRegister = () => {
-    navigate("/products/register");
-  };
-
-  const handleDelete = async (product) => {
+  const handleDiscard = async (product) => {
     try {
       const response = await axios.post("/api/products/delete", {
         codigo: product.productCode,
@@ -228,7 +231,7 @@ const ProductList = ({ user }) => {
   return (
     <Body>
       <NavBar>
-        <Link to="/" onClick={handleLogout}>
+        <Link to="/">
           <Logo
             src="/image/logo1.png"
             alt="logo_tebanilia"
@@ -255,7 +258,7 @@ const ProductList = ({ user }) => {
             </PopupContent>
           </PopupContainer>
         )}
-        <Title>Lista de Productos</Title>
+        <Title>Detalle compra</Title>
         <FilterContainer>
           <SearchInput
             type="text"
@@ -285,17 +288,11 @@ const ProductList = ({ user }) => {
               onChange={handleSortByPriceChange}
             />
           </CheckboxLabel>
-          {user.role !== "admin" ? (
-            <ButtonContainerFilter>
-              <Button onClick={handleResetFilters}>Restablecer Filtros</Button>
-              <Button onClick={handleCart}>Ver compra</Button>
-            </ButtonContainerFilter>
-          ) : (
-            <ButtonContainerFilter>
-              <Button onClick={handleResetFilters}>Restablecer Filtros</Button>
-              <Button onClick={navigateToRegister}>Agregar producto</Button>
-            </ButtonContainerFilter>
-          )}
+          <ButtonContainerFilter>
+            <Button onClick={handleResetFilters}>Restablecer Filtros</Button>
+            <Button onClick={handleConfirm}>Confirmar compra</Button>
+            <Button onClick={handleDiscard}>Descartar compra</Button>
+          </ButtonContainerFilter>
         </FilterContainer>
         <CardContainer>
           {filteredProducts.length > 0 ? (
@@ -303,30 +300,29 @@ const ProductList = ({ user }) => {
               <Card key={product.id}>
                 <ProductDetailTitle>{product.productName}</ProductDetailTitle>
                 <ProductImage
-                  onClick={() => toggleDescription(product.productDescription)}
                   src={`/api/public/uploads/products/${product.productImage}`}
                   alt={product.productName}
                 />
-                <ProductDetailSubtitle>
-                  {product.productDetail}
-                </ProductDetailSubtitle>
                 <ProductPrice>Precio: ${product.productPrice}</ProductPrice>
-                {user.role !== "admin" ? (
-                  <ButtonContainer>
-                    <Button onClick={() => handleAddToCart(product)}>
-                      Comprar
-                    </Button>
-                  </ButtonContainer>
-                ) : (
-                  <ButtonContainer>
-                    <Button onClick={() => handleEdit(product)}>
-                      Modificar
-                    </Button>
-                    <Button onClick={() => handleDelete(product)}>
-                      Eliminar
-                    </Button>
-                  </ButtonContainer>
-                )}
+                <ProductDetailSubtitle>
+                  Cantidad:{" "}
+                  {
+                    orderDetails.find(
+                      (detail) => detail.product_id === product.id
+                    )?.quantity
+                  }
+                  <br />
+                  Total:{" "}
+                  {
+                    orderDetails.find(
+                      (detail) => detail.product_id === product.id
+                    )?.price
+                  }
+                </ProductDetailSubtitle>
+
+                <ButtonContainer>
+                  <Button onClick={() => handleDelete(product)}>Quitar</Button>
+                </ButtonContainer>
               </Card>
             ))
           ) : products.length > 0 ? (
@@ -343,4 +339,4 @@ const ProductList = ({ user }) => {
   );
 };
 
-export default ProductList;
+export default ShoppingCart;
