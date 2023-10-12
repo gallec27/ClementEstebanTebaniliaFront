@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import useStore from "../store/store";
 import axios from "axios";
+import { formatDate } from '../utils/dateUtils';
+import OrdenConfirmModal from "./OrdenModal";
 import { ContainerProducts } from "./styles/Products";
 import {
   FilterContainer,
@@ -33,9 +35,10 @@ import { FormButton } from "./styles/Login";
 import { NavBar, Logo, UserInfo, Body, Footer } from "./styles/Layout";
 
 const ShoppingCart = ({ user }) => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();
   const setUser = useStore((state) => state.setUser);
-  const [order, setOrder] = useState(0);
+  const [order, setOrder] = useState([]);
   const [orderDetails, setOrderDetails] = useState([]);
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
@@ -47,6 +50,9 @@ const ShoppingCart = ({ user }) => {
   const categories = useStore((state) => state.categories);
   const [errorMessage, setErrorMessage] = useState("");
   const [showPopup, setShowPopup] = useState(false);
+  const [navigateOnClose, setNavigateOnClose] = useState(false);
+  const [orderTotal, setOrderTotal] = useState(0);
+  const [componentMounted, setComponentMounted] = useState(false);
 
   useEffect(() => {
     try {
@@ -54,11 +60,18 @@ const ShoppingCart = ({ user }) => {
         .get(`/api/cart/getOrder?userId=${user.id}`)
         .then((response) => {
           if (response.status === 200) {
-            console.log("ShoppingCart useEffect: ", response.data);
+            console.log("data.order: ", response.data.order);
             setOrder(response.data.order);
             setOrderDetails(response.data.orderDetails);
             setProducts(response.data.orderProducts);
             setFilteredProducts(response.data.orderProducts);
+            setOrderTotal(response.data.order.total_price);
+            setComponentMounted(true);
+            console.log("ShoppingCart-useEffect order: ", response.data.order);
+            console.log(
+              "ShoppingCart-useEffect total: ",
+              response.data.order.total_price
+            );
           } else {
             setErrorMessage("No se encontró orden.");
             setShowPopup(true);
@@ -76,22 +89,59 @@ const ShoppingCart = ({ user }) => {
     }
   }, []);
 
+  useEffect(() => {
+    if (componentMounted && filteredProducts.length === 0) {
+      handleDiscard();
+    }
+  }, [filteredProducts, componentMounted]);
+
+  const calculateOrderTotal = (totalByProduct) => {
+    console.log("calculateOrderTotal order: ", order);
+    const currentTotalPrice = parseFloat(order.total_price);
+    const totalByProductNumeric = parseFloat(totalByProduct);
+    console.log(
+      "calculateOrderTotal totalorder y totalproduct: ",
+      currentTotalPrice,
+      totalByProductNumeric
+    );
+
+    if (isNaN(currentTotalPrice) || isNaN(totalByProductNumeric)) {
+      throw new Error("Total de la compra o del producto no es un número.");
+    }
+
+    const newTotalPrice = currentTotalPrice - totalByProductNumeric;
+
+    setOrderTotal(newTotalPrice);
+    console.log("calculateOrderTotal: ", orderTotal);
+  };
+
   const handleDelete = async (product) => {
     try {
-      const response = await axios.post("/api/cart/delete", {        
+      const totalByProduct = orderDetails.find(
+        (detail) => detail.product_id === product.id
+      ).price;
+
+      console.log("handleDelete: ", totalByProduct);
+      calculateOrderTotal(totalByProduct);
+
+      const response = await axios.post("/api/cart/delete", {
         orderId: order.id,
         orderDetailsId: orderDetails.find(
           (detail) => detail.product_id === product.id
         ).id,
-        totalProduct: orderDetails.find(
-          (detail) => detail.product_id === product.id
-        ).price
+        totalProduct: totalByProduct,
       });
 
       if (response.status === 200) {
         setFilteredProducts((prevProducts) =>
           prevProducts.filter((p) => p.productCode !== product.productCode)
         );
+
+        console.log("FilteredProducts: ", filteredProducts);
+        console.log("Total: ", orderTotal);
+        if (filteredProducts.length === 0) {
+          handleDiscard();
+        }
       } else {
         setErrorMessage("Error al quitar el producto.");
         setShowPopup(true);
@@ -102,40 +152,30 @@ const ShoppingCart = ({ user }) => {
     }
   };
 
-  const handleConfirm = async (product) => {
-    try {
-      const response = await axios.post("/api/products/delete", {
-        codigo: product.productCode,
-      });
-      if (response.status === 200) {
-        setFilteredProducts((prevProducts) =>
-          prevProducts.filter((p) => p.productCode !== product.productCode)
-        );
-      } else {
-        setErrorMessage("Error al eliminar el producto.");
-        setShowPopup(true);
-      }
-    } catch (error) {
-      setErrorMessage("Error al eliminar el producto.");
-      setShowPopup(true);
-    }
+  const handleConfirm = async () => {
+    console.log("handleConfirm: ", order);
+    setIsModalOpen(true);
   };
 
-  const handleDiscard = async (product) => {
+  const closeModal = () => {
+    setIsModalOpen(false);
+  };
+
+  const handleDiscard = async () => {
     try {
-      const response = await axios.post("/api/products/delete", {
-        codigo: product.productCode,
+      const response = await axios.post("/api/cart/deleteCart", {
+        orderId: order.id,
       });
       if (response.status === 200) {
-        setFilteredProducts((prevProducts) =>
-          prevProducts.filter((p) => p.productCode !== product.productCode)
-        );
+        setErrorMessage("Compra descartada.");
+        setShowPopup(true);
+        setNavigateOnClose(true);
       } else {
-        setErrorMessage("Error al eliminar el producto.");
+        setErrorMessage("Error al eliminar la compra.");
         setShowPopup(true);
       }
     } catch (error) {
-      setErrorMessage("Error al eliminar el producto.");
+      setErrorMessage("Error al eliminar la compra.");
       setShowPopup(true);
     }
   };
@@ -228,6 +268,13 @@ const ShoppingCart = ({ user }) => {
     navigate("/");
   };
 
+  const handlePopupClose = () => {
+    setShowPopup(false);
+    if (navigateOnClose) {
+      navigate("/");
+    }
+  };
+
   return (
     <Body>
       <NavBar>
@@ -252,13 +299,11 @@ const ShoppingCart = ({ user }) => {
           <PopupContainer>
             <PopupContent>
               <PopupText>{errorMessage}</PopupText>
-              <ResetButton onClick={() => setShowPopup(false)}>
-                Cerrar
-              </ResetButton>
+              <ResetButton onClick={handlePopupClose}>Cerrar</ResetButton>
             </PopupContent>
           </PopupContainer>
         )}
-        <Title>Detalle compra</Title>
+        <Title>Detalle compra - Total: ${orderTotal}</Title>
         <FilterContainer>
           <SearchInput
             type="text"
@@ -290,7 +335,9 @@ const ShoppingCart = ({ user }) => {
           </CheckboxLabel>
           <ButtonContainerFilter>
             <Button onClick={handleResetFilters}>Restablecer Filtros</Button>
-            <Button onClick={handleConfirm}>Confirmar compra</Button>
+            <Button onClick={() => setIsModalOpen(true)}>
+              Confirmar compra
+            </Button>
             <Button onClick={handleDiscard}>Descartar compra</Button>
           </ButtonContainerFilter>
         </FilterContainer>
@@ -335,6 +382,38 @@ const ShoppingCart = ({ user }) => {
       <Footer>
         <Logo src="/image/logo.png" alt="logo_tebanilia" />
       </Footer>
+
+      <OrdenConfirmModal
+        isOpen={isModalOpen}
+        closeModal={() => setIsModalOpen(false)}
+        content={
+          <div>
+            <h1>Confirmación de la Orden</h1>
+            <h2>Número de Orden: {order.id}</h2>
+            <p>Fecha de la Orden: {formatDate(order.updatedAt)}</p>
+            <p>Usuario: {user.firstName.concat(" ", user.surname)}</p>
+            <p>Dirección: {order.shipping_address}</p>
+
+            <h2>Detalle de la Orden</h2>
+            <ul>
+              {orderDetails.map((detail) => (
+                <li key={detail.id}>
+                  Producto: {products.find(
+                      (product) => detail.product_id === product.id
+                    )?.productName}
+                  <br />
+                  Cantidad: {detail.quantity}
+                  <br />
+                  Precio Unitario: ${detail.price}
+                </li>
+              ))}
+            </ul>
+
+            <p>Total de la Orden: ${order.total_price}</p>
+            <button onClick={handleConfirm}>Confirmar</button>
+          </div>
+        }
+      />
     </Body>
   );
 };
