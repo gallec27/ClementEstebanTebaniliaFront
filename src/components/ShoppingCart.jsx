@@ -75,30 +75,22 @@ const ShoppingCart = ({ user }) => {
         .get(`/api/cart/getOrder?userId=${user.id}`)
         .then((response) => {
           if (response.status === 200) {
-            console.log("data.order: ", response.data.order);
             setOrder(response.data.order);
             setOrderDetails(response.data.orderDetails);
             setProducts(response.data.orderProducts);
             setFilteredProducts(response.data.orderProducts);
             setOrderTotal(response.data.order.total_price);
             setComponentMounted(true);
-            console.log("ShoppingCart-useEffect order: ", response.data.order);
-            console.log(
-              "ShoppingCart-useEffect total: ",
-              response.data.order.total_price
-            );
           } else {
             setErrorMessage("No se encontró orden.");
             setShowPopup(true);
           }
         })
-        .catch((error) => {
-          console.log("ShoppingCart: ", error);
+        .catch((error) => {          
           setErrorMessage("Error al buscar órdenes.");
           setShowPopup(true);
         });
-    } catch (error) {
-      console.log("ShoppingCart: ", error);
+    } catch (error) {      
       setErrorMessage("Error al buscar órdenes.");
       setShowPopup(true);
     }
@@ -110,15 +102,9 @@ const ShoppingCart = ({ user }) => {
     }
   }, [filteredProducts, componentMounted]);
 
-  const calculateOrderTotal = (totalByProduct) => {
-    console.log("calculateOrderTotal order: ", order);
+  const calculateOrderTotal = (totalByProduct) => {    
     const currentTotalPrice = parseFloat(order.total_price);
-    const totalByProductNumeric = parseFloat(totalByProduct);
-    console.log(
-      "calculateOrderTotal totalorder y totalproduct: ",
-      currentTotalPrice,
-      totalByProductNumeric
-    );
+    const totalByProductNumeric = parseFloat(totalByProduct);    
 
     if (isNaN(currentTotalPrice) || isNaN(totalByProductNumeric)) {
       throw new Error("Total de la compra o del producto no es un número.");
@@ -126,8 +112,7 @@ const ShoppingCart = ({ user }) => {
 
     const newTotalPrice = currentTotalPrice - totalByProductNumeric;
 
-    setOrderTotal(newTotalPrice);
-    console.log("calculateOrderTotal: ", orderTotal);
+    setOrderTotal(newTotalPrice);    
   };
 
   const handleDelete = async (product) => {
@@ -135,8 +120,7 @@ const ShoppingCart = ({ user }) => {
       const totalByProduct = orderDetails.find(
         (detail) => detail.product_id === product.id
       ).price;
-
-      console.log("handleDelete: ", totalByProduct);
+   
       calculateOrderTotal(totalByProduct);
 
       const response = await axios.post("/api/cart/delete", {
@@ -151,9 +135,7 @@ const ShoppingCart = ({ user }) => {
         setFilteredProducts((prevProducts) =>
           prevProducts.filter((p) => p.productCode !== product.productCode)
         );
-
-        console.log("FilteredProducts: ", filteredProducts);
-        console.log("Total: ", orderTotal);
+        
         if (filteredProducts.length === 0) {
           handleDiscard();
         }

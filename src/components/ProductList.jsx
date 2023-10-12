@@ -69,7 +69,8 @@ const ProductList = ({ user }) => {
   const handleAddToCart = async (product) => {
     try {
       const response = await axios.post("/api/cart/addToCart", {
-        productCode: product.productCode, clientEmail: user.email
+        productCode: product.productCode,
+        clientEmail: user.email,
       });
       if (response.status === 200) {
         setErrorMessage("Producto agregado al carrito.");
@@ -88,7 +89,7 @@ const ProductList = ({ user }) => {
     navigate("/cart/shoppingCart");
   };
 
-  const toggleDescription = (productDescription) => {    
+  const toggleDescription = (productDescription) => {
     setErrorMessage(productDescription);
     setShowPopup(true);
   };
