@@ -1,6 +1,6 @@
 import ReactModal from 'react-modal';
 import {
-    ModalOverlay, ModalContainer, CloseButton
+    ModalOverlay, ModalContainer, CloseButton 
   } from "./styles/Modal";
 
 ReactModal.setAppElement('#root'); 

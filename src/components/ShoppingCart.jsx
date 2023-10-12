@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import jsPDF from "jspdf";
+import "jspdf-autotable";
 import useStore from "../store/store";
 import axios from "axios";
-import { formatDate } from '../utils/dateUtils';
+import { formatDate } from "../utils/dateUtils";
 import OrdenConfirmModal from "./OrdenModal";
 import { ContainerProducts } from "./styles/Products";
 import {
@@ -33,6 +35,19 @@ import {
 import { FormButton } from "./styles/Login";
 
 import { NavBar, Logo, UserInfo, Body, Footer } from "./styles/Layout";
+
+import {
+  ModalHeader,
+  OrderNumber,
+  OrderDate,
+  OrderDetail,
+  DetailItem,
+  ProductName,
+  Price,
+  ModalFooter,
+  TotalAmount,
+  Quantity,
+} from "./styles/Modal";
 
 const ShoppingCart = ({ user }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -153,11 +168,36 @@ const ShoppingCart = ({ user }) => {
   };
 
   const handleConfirm = async () => {
-    console.log("handleConfirm: ", order);
-    setIsModalOpen(true);
+    try {
+      const doc = new jsPDF();
+      
+      doc.text("Confirmación de la Orden", 10, 10);
+     
+      doc.text(`Número de Orden: ${order.id}`, 20, 20);
+      doc.text(`Fecha de la Orden: ${formatDate(order.updatedAt)}`, 20, 30);
+      doc.text(`Usuario: ${user.firstName} ${user.surname}`, 20, 40);
+      doc.text(`Dirección: ${order.shipping_address}`, 20, 50);  
+      
+      doc.text("Detalle de la Orden", 10, 70);
+      const columns = ["Producto", "Cantidad", "Precio"];
+      const data = orderDetails.map((detail) => [
+        products.find((product) => detail.product_id === product.id)?.productName || "N/A",
+        detail.quantity,
+        `$${detail.price}`,
+      ]);
+      doc.autoTable(columns, data, { startY: 80 });  
+      
+      doc.text(`Total de la Orden: $${order.total_price}`, 20, doc.autoTable.previous.finalY + 10);
+      
+      doc.save("orden.pdf");
+      closeModal(); 
+      handleDiscard()
+    } catch (error) {
+      console.error("Error al generar el PDF: ", error);
+    }
   };
-
-  const closeModal = () => {
+  
+  const closeModal = () => {    
     setIsModalOpen(false);
   };
 
@@ -387,30 +427,37 @@ const ShoppingCart = ({ user }) => {
         isOpen={isModalOpen}
         closeModal={() => setIsModalOpen(false)}
         content={
-          <div>
+          <div id="orderConfirm">
             <h1>Confirmación de la Orden</h1>
-            <h2>Número de Orden: {order.id}</h2>
-            <p>Fecha de la Orden: {formatDate(order.updatedAt)}</p>
-            <p>Usuario: {user.firstName.concat(" ", user.surname)}</p>
-            <p>Dirección: {order.shipping_address}</p>
+            <ModalHeader>
+              <OrderNumber>Número: {order.id}</OrderNumber>
+              <OrderDate>Fecha: {formatDate(order.updatedAt)}</OrderDate>
+              <p>Usuario: {user.firstName.concat(" ", user.surname)}</p>
+              <p>Dirección: {order.shipping_address}</p>
+            </ModalHeader>
 
-            <h2>Detalle de la Orden</h2>
-            <ul>
+            <h2>Detalle</h2>
+            <OrderDetail>
               {orderDetails.map((detail) => (
-                <li key={detail.id}>
-                  Producto: {products.find(
-                      (product) => detail.product_id === product.id
-                    )?.productName}
-                  <br />
-                  Cantidad: {detail.quantity}
-                  <br />
-                  Precio Unitario: ${detail.price}
-                </li>
+                <DetailItem key={detail.id}>
+                  <ProductName>
+                    Producto:{" "}
+                    {
+                      products.find(
+                        (product) => detail.product_id === product.id
+                      )?.productName
+                    }
+                  </ProductName>
+                  <Quantity>Cantidad: {detail.quantity}</Quantity>
+                  <Price>Precio: ${detail.price}</Price>
+                </DetailItem>
               ))}
-            </ul>
+            </OrderDetail>
 
-            <p>Total de la Orden: ${order.total_price}</p>
-            <button onClick={handleConfirm}>Confirmar</button>
+            <ModalFooter>
+              <TotalAmount>Total de la Orden: ${order.total_price}</TotalAmount>
+              <button onClick={handleConfirm}>Confirmar</button>
+            </ModalFooter>
           </div>
         }
       />

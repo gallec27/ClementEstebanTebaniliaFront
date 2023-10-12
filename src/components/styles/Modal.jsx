@@ -33,4 +33,76 @@ const CloseButton = styled.button`
   cursor: pointer;
 `;
 
-export { ModalOverlay, ModalContainer, CloseButton };
+// Estilos para la cabecera del modal
+const ModalHeader = styled.div`
+  text-align: left; 
+  margin-bottom: 20px;
+  border: 1px solid #ccc; 
+  border-radius: 5px;
+  padding: 8px; 
+`;
+
+const OrderNumber = styled.h2`
+  font-size: 18px;
+  margin: 0;
+  text-align: right; 
+`;
+
+const OrderDate = styled.p`
+  margin: 0;
+  text-align: right; 
+`;
+
+// Estilos para el detalle de la orden
+const OrderDetail = styled.ul`
+  list-style: none;
+  padding: 0;
+`;
+
+const DetailItem = styled.li`
+  margin-bottom: 20px;
+  border: 1px solid #ccc; 
+  padding: 5px;
+  border-radius: 5px; 
+`;
+
+const ProductName = styled.div`
+  font-weight: bold;
+`;
+
+const Quantity = styled.div`
+  font-weight: bold;
+`;
+
+const Price = styled.div`
+  font-weight: bold;
+`;
+
+// Estilos para el pie del modal
+const ModalFooter = styled.div`
+  text-align: right;
+  margin-top: 20px;
+`;
+
+const TotalAmount = styled.p`
+  font-weight: bold;
+  font-size: 20px;
+`;
+
+
+
+export { 
+    ModalOverlay, 
+    ModalContainer, 
+    CloseButton, 
+    ModalHeader,
+    OrderNumber,
+    OrderDate,
+    OrderDetail,
+    DetailItem,
+    ProductName,
+    Price,
+    ModalFooter,
+    TotalAmount,
+    Quantity
+ };
